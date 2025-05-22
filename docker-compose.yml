@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  mcp-consumer:
+    build: .
+    ports:
+      - "8000:8000" # Assuming the server runs on port 8000, adjust if needed
+    environment:
+      # Add any environment variables needed by your application here
+      # For example:
+      # API_URL: "your_api_url"
+    volumes:
+      - .:/app # Mount the current directory to /app inside the container

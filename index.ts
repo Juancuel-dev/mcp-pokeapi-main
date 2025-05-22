@@ -73,7 +73,7 @@ class PokeAPIServer {
         },
         {
           name: 'list_pokemon',
-          description: 'List multiple Pokémon using a limit.',
+          description: 'List multiple Pokémon using a limit and optional offset.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -81,13 +81,17 @@ class PokeAPIServer {
                 type: 'string',
                 description: 'The maximum number of Pokémon to retrieve.',
               },
+              offset: {
+                type: 'string',
+                description: 'The number of Pokémon to skip before starting to collect the result set.',
+              },
             },
-            required: ['limit'],
+            required: ['limit'], // 'offset' is optional
           },
         },
       ],
     }));
-
+    
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (request.params.name === 'get_pokemon') {
         if (!isValidPokemonArgs(request.params.arguments)) {
@@ -96,12 +100,12 @@ class PokeAPIServer {
             'Invalid pokemon arguments'
           );
         }
-
+    
         const pokemonName = request.params.arguments.name.toLowerCase();
-
+    
         try {
           const response = await this.axiosInstance.get(`/pokemon/${pokemonName}`);
-
+    
           return {
             content: [
               {
@@ -128,10 +132,17 @@ class PokeAPIServer {
         }
       } else if (request.params.name === 'list_pokemon') {
         const limit = request.params.arguments?.limit || '5';
+        const offset = request.params.arguments?.offset;
+    
+        const queryParams = new URLSearchParams({ limit: String(limit) });
+        if (offset) {
+          queryParams.append('offset', String(offset));
+        }
 
+    
         try {
-          const response = await this.axiosInstance.get(`/pokemon?limit=${limit}`);
-
+          const response = await this.axiosInstance.get(`/pokemon?${queryParams.toString()}`);
+    
           return {
             content: [
               {
